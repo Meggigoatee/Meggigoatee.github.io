@@ -1,0 +1,76 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Resolve GitHub Pages base URL
+        env:
+          CONFIGURED_BASE_URL: ${{ vars.NUXT_APP_BASE_URL }}
+        shell: bash
+        run: |
+          repository_name="${GITHUB_REPOSITORY#*/}"
+
+          if [[ -n "$CONFIGURED_BASE_URL" ]]; then
+            base_url="$CONFIGURED_BASE_URL"
+          elif [[ "$repository_name" == *.github.io ]]; then
+            base_url="/"
+          else
+            base_url="/$repository_name/"
+          fi
+
+          echo "NUXT_APP_BASE_URL=$base_url" >> "$GITHUB_ENV"
+
+      - name: Build static site
+        run: pnpm build:pages
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: .output/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

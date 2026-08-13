@@ -1,0 +1,130 @@
+@import './reset.css';
+@import './tokens.css';
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: var(--color-accent);
+  text-underline-offset: 0.2em;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 4px;
+}
+
+.container {
+  width: min(100% - 2rem, 72rem);
+  margin-inline: auto;
+}
+
+.section {
+  padding-block: clamp(5rem, 10vw, 9rem);
+}
+
+.section-muted {
+  border-block: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-7);
+}
+
+.section-heading h2,
+.page-header h1 {
+  margin: var(--space-2) 0 0;
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+
+.page-header {
+  max-width: 42rem;
+  margin-bottom: var(--space-8);
+}
+
+.page-header p:last-child {
+  margin-top: var(--space-4);
+  color: var(--color-muted);
+  font-size: 1.1rem;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+  gap: var(--space-5);
+}
+
+.button {
+  display: inline-flex;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.05rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.button-primary {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+.button-secondary {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.prose-layout {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.55fr) minmax(0, 1fr);
+  gap: clamp(3rem, 8vw, 8rem);
+}
+
+.prose-layout h1 {
+  margin: var(--space-2) 0 0;
+  font-size: clamp(3rem, 8vw, 5rem);
+  letter-spacing: -0.055em;
+}
+
+.prose {
+  color: var(--color-muted);
+  font-size: 1.08rem;
+}
+
+.prose h2 {
+  margin-top: var(--space-8);
+  color: var(--color-text);
+}
+
+@media (max-width: 680px) {
+  .section-heading,
+  .prose-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
