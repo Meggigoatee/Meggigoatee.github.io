@@ -18,6 +18,14 @@
         {{ tech }}
       </li>
     </ul>
+
+    <NuxtLink
+      v-if="showDetailLink"
+      class="detail-link"
+      :to="`/projects/${project.slug}`"
+    >
+      프로젝트 보기 <span aria-hidden="true">→</span>
+    </NuxtLink>
   </article>
 </template>
 
@@ -26,11 +34,14 @@ import type { ProjectsCollectionItem } from '@nuxt/content'
 
 defineProps<{
   project: ProjectsCollectionItem
+  showDetailLink?: boolean
 }>()
 </script>
 
 <style scoped>
 .project-card {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   padding: var(--space-6);
   border: 1px solid var(--color-border);
@@ -83,5 +94,14 @@ p {
   color: var(--color-accent-strong);
   font-size: 0.78rem;
   font-weight: 700;
+}
+
+.detail-link {
+  display: inline-flex;
+  align-self: flex-end;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-6);
+  font-weight: 800;
 }
 </style>

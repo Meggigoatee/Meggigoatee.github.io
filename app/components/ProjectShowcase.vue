@@ -1,6 +1,6 @@
 <template>
   <article class="project-showcase">
-    <div class="showcase-copy">
+    <div class="showcase-heading">
       <div class="project-meta">
         <span>{{ project.category }}</span>
         <span v-if="isConfirmed(project.status)">{{ project.status }}</span>
@@ -13,7 +13,9 @@
       </h3>
 
       <p class="summary">{{ project.summary }}</p>
+    </div>
 
+    <div class="showcase-copy">
       <dl class="project-facts">
         <div v-if="project.period">
           <dt>기간</dt>
@@ -36,8 +38,8 @@
       </NuxtLink>
     </div>
 
-    <div class="showcase-visual">
-      <ProjectDiagram v-if="project.diagram" :diagram="project.diagram" />
+    <div v-if="project.diagram" class="showcase-visual">
+      <ProjectDiagram :diagram="project.diagram" />
     </div>
   </article>
 </template>
@@ -55,8 +57,9 @@ const isConfirmed = (value: string | null) => Boolean(value && value !== '확인
 <style scoped>
 .project-showcase {
   display: grid;
-  grid-template-columns: minmax(16rem, 0.75fr) minmax(0, 1.25fr);
-  gap: clamp(2rem, 5vw, 5rem);
+  grid-template-columns: minmax(14rem, 0.65fr) minmax(0, 1.35fr);
+  column-gap: clamp(2rem, 5vw, 5rem);
+  row-gap: clamp(2rem, 4vw, 3rem);
   align-items: start;
   padding: clamp(1.5rem, 4vw, 3rem);
   border: 1px solid var(--color-border);
@@ -88,6 +91,8 @@ h3 a {
 }
 
 .summary {
+  max-width: 32rem;
+  margin: 0;
   color: var(--color-muted);
   font-size: 1.05rem;
 }
@@ -95,7 +100,7 @@ h3 a {
 .project-facts {
   display: grid;
   gap: var(--space-3);
-  margin: var(--space-6) 0 0;
+  margin: 0;
 }
 
 .project-facts div {
@@ -143,6 +148,7 @@ h3 a {
 }
 
 .showcase-visual {
+  grid-column: 1 / -1;
   min-width: 0;
 }
 

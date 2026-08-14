@@ -3,8 +3,25 @@
     <section class="hero section">
       <div class="container hero-grid">
         <div>
-          <p class="eyebrow">{{ profile.role }}</p>
-          <h1>{{ profile.name }}</h1>
+          <div class="identity-row">
+            <div class="profile-photo-frame">
+              <img
+                class="profile-photo"
+                src="/images/profile.jpg"
+                alt="설준찬 프로필 사진"
+                width="591"
+                height="787"
+              >
+            </div>
+
+            <div class="identity-copy">
+              <p class="eyebrow">{{ profile.role }}</p>
+              <h1>
+                <span>{{ profile.name }}</span>
+                <span class="english-name">{{ profile.englishName }}</span>
+              </h1>
+            </div>
+          </div>
           <p class="hero-copy">
             {{ profile.summary }}
           </p>
@@ -13,9 +30,16 @@
             <NuxtLink class="button button-primary" to="/projects">
               프로젝트 보기
             </NuxtLink>
-            <a class="button button-secondary" :href="`mailto:${profile.email}`">
+            <button
+              ref="contactTrigger"
+              class="button button-secondary"
+              type="button"
+              aria-haspopup="dialog"
+              :aria-expanded="isContactOpen"
+              @click="openContact"
+            >
               연락하기
-            </a>
+            </button>
           </div>
         </div>
 
@@ -46,15 +70,140 @@
             v-for="project in featuredProjects"
             :key="project.slug"
             :project="project"
+            show-detail-link
           />
         </div>
       </div>
     </section>
+
+    <Teleport to="body">
+      <div
+        v-if="isContactOpen"
+        class="contact-overlay"
+        @click.self="closeContact"
+        @keydown.esc="closeContact"
+      >
+        <section
+          ref="contactDialog"
+          class="contact-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="contact-dialog-title"
+          @keydown.tab="trapContactFocus"
+        >
+          <div class="contact-dialog-header">
+            <div>
+              <p class="eyebrow">Contact</p>
+              <h2 id="contact-dialog-title">연락하기</h2>
+            </div>
+            <button
+              ref="contactClose"
+              class="contact-close"
+              type="button"
+              aria-label="연락처 팝업 닫기"
+              @click="closeContact"
+            >
+              ×
+            </button>
+          </div>
+
+          <p class="contact-intro">
+            이메일 또는 전화번호를 복사해 연락해 주세요.
+          </p>
+
+          <dl class="contact-list">
+            <div>
+              <dt>이메일</dt>
+              <dd>{{ profile.email }}</dd>
+              <button
+                type="button"
+                :class="{ 'is-copied': copiedField === 'email' }"
+                :aria-label="copiedField === 'email' ? '이메일 복사 완료' : '이메일 복사'"
+                @click="copyContact('email', profile.email)"
+              >
+                {{ copiedField === 'email' ? '✓' : '복사' }}
+              </button>
+            </div>
+            <div>
+              <dt>전화번호</dt>
+              <dd>{{ profile.phone }}</dd>
+              <button
+                type="button"
+                :class="{ 'is-copied': copiedField === 'phone' }"
+                :aria-label="copiedField === 'phone' ? '전화번호 복사 완료' : '전화번호 복사'"
+                @click="copyContact('phone', profile.phone)"
+              >
+                {{ copiedField === 'phone' ? '✓' : '복사' }}
+              </button>
+            </div>
+          </dl>
+
+          <p class="copy-status" aria-live="polite">
+            {{ copyStatus }}
+          </p>
+        </section>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { profile } from '~/data/profile'
+
+type ContactField = 'email' | 'phone'
+
+const isContactOpen = ref(false)
+const copiedField = ref<ContactField | null>(null)
+const copyStatus = ref('')
+const contactTrigger = ref<HTMLButtonElement | null>(null)
+const contactClose = ref<HTMLButtonElement | null>(null)
+const contactDialog = ref<HTMLElement | null>(null)
+
+const openContact = async () => {
+  copiedField.value = null
+  copyStatus.value = ''
+  isContactOpen.value = true
+  await nextTick()
+  contactClose.value?.focus()
+}
+
+const closeContact = async () => {
+  isContactOpen.value = false
+  copiedField.value = null
+  copyStatus.value = ''
+  await nextTick()
+  contactTrigger.value?.focus()
+}
+
+const copyContact = async (field: ContactField, value: string) => {
+  try {
+    await navigator.clipboard.writeText(value)
+    copiedField.value = field
+    copyStatus.value = `${field === 'email' ? '이메일' : '전화번호'}을 복사했습니다.`
+  } catch {
+    copiedField.value = null
+    copyStatus.value = '복사하지 못했습니다. 연락처를 직접 선택해 복사해 주세요.'
+  }
+}
+
+const trapContactFocus = (event: KeyboardEvent) => {
+  const focusableElements = contactDialog.value?.querySelectorAll<HTMLElement>('button')
+
+  if (!focusableElements?.length) {
+    return
+  }
+
+  const firstElement = focusableElements[0]
+  const lastElement = focusableElements[focusableElements.length - 1]
+
+  if (event.shiftKey && document.activeElement === firstElement) {
+    event.preventDefault()
+    lastElement?.focus()
+  } else if (!event.shiftKey && document.activeElement === lastElement) {
+    event.preventDefault()
+    firstElement?.focus()
+  }
+}
 
 const { data: featuredProjects } = await useAsyncData('featured-projects', () => {
   return queryCollection('projects')
@@ -64,9 +213,9 @@ const { data: featuredProjects } = await useAsyncData('featured-projects', () =>
 })
 
 useSeoMeta({
-  title: `${profile.name} | ${profile.role}`,
+  title: `${profile.name} ${profile.englishName} | ${profile.role}`,
   description: profile.summary,
-  ogTitle: `${profile.name} | ${profile.role}`,
+  ogTitle: `${profile.name} ${profile.englishName} | ${profile.role}`,
   ogDescription: profile.summary,
   ogType: 'website'
 })
@@ -88,10 +237,21 @@ useSeoMeta({
 
 h1 {
   max-width: 12ch;
-  margin: var(--space-3) 0 var(--space-5);
-  font-size: clamp(3.25rem, 10vw, 7rem);
+  margin: 0;
+  font-size: clamp(2.25rem, 9.2vw, 7rem);
   line-height: 0.95;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.03em;
+}
+
+h1 span {
+  display: block;
+  white-space: nowrap;
+}
+
+.english-name {
+  margin-top: 0.08em;
+  font-size: 0.68em;
+  letter-spacing: -0.015em;
 }
 
 .hero-copy {
@@ -107,7 +267,47 @@ h1 {
   margin-top: var(--space-7);
 }
 
+.hero-actions button {
+  cursor: pointer;
+  font: inherit;
+}
+
+.identity-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(var(--space-4), 3vw, var(--space-6));
+  margin: 0 0 var(--space-5);
+}
+
+.identity-copy {
+  min-width: 0;
+}
+
+.identity-copy .eyebrow {
+  margin-bottom: var(--space-3);
+}
+
+.profile-photo-frame {
+  flex: 0 0 auto;
+  width: clamp(10.5rem, 15vw, 13rem);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+}
+
 .skill-panel {
+  width: 100%;
   padding: var(--space-6);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -149,10 +349,144 @@ h1 {
   font-size: 0.86rem;
 }
 
+.contact-overlay {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  background: rgb(9 13 22 / 68%);
+  backdrop-filter: blur(8px);
+}
+
+.contact-dialog {
+  width: min(100%, 30rem);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 2rem 6rem rgb(0 0 0 / 35%);
+  animation: contact-dialog-in 180ms ease-out;
+}
+
+.contact-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.contact-dialog h2 {
+  margin: var(--space-2) 0 0;
+  font-size: clamp(1.6rem, 5vw, 2.1rem);
+  line-height: 1.1;
+}
+
+.contact-close {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.contact-intro {
+  margin: var(--space-4) 0 0;
+  color: var(--color-muted);
+}
+
+.contact-list {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+}
+
+.contact-list > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.15rem var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-bg);
+}
+
+.contact-list dt {
+  grid-column: 1;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.contact-list dd {
+  grid-column: 1;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 750;
+}
+
+.contact-list button {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  align-self: center;
+  min-width: 4rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.65rem;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.contact-list button.is-copied {
+  border-color: color-mix(in srgb, #22c55e 55%, var(--color-border));
+  background: color-mix(in srgb, #22c55e 18%, var(--color-surface));
+  color: color-mix(in srgb, #16a34a 75%, var(--color-text));
+  box-shadow: 0 0 0 3px color-mix(in srgb, #22c55e 14%, transparent);
+  font-size: 1rem;
+}
+
+.copy-status {
+  min-height: 1.5rem;
+  margin: var(--space-3) 0 0;
+  color: var(--color-accent);
+  font-size: 0.85rem;
+}
+
+@keyframes contact-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.98);
+  }
+}
+
 @media (max-width: 760px) {
   .hero-grid {
     grid-template-columns: 1fr;
     gap: var(--space-8);
+  }
+
+  .profile-photo-frame {
+    width: clamp(6.25rem, 28vw, 8rem);
   }
 }
 </style>
