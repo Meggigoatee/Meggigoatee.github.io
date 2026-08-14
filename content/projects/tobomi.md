@@ -21,9 +21,106 @@ techStack:
 cover: null
 gallery: []
 video: null
+diagram:
+  kind: sequence
+  title: 기능 요청에서 각 창의 상태 반영까지
+  description: Vue 화면의 기능 요청이 Tauri 커맨드와 Rust 서비스를 거쳐 로컬 데이터 또는 운영체제 기능을 처리하고, 의미 이벤트로 각 창과 컴패니언에 돌아오는 순서입니다.
+  ariaLabel: Vue UI와 Pinia, Tauri Commands, Rust Services, SQLite와 SQLx, OS Integration, App Events 순서로 요청을 처리하고 변경 이벤트를 Vue UI와 Pinia에 돌려주는 로컬 데스크탑 애플리케이션 시퀀스
+  steps:
+    - id: ui
+      label: Vue UI · Pinia
+      detail: 기능별 창의 사용자 입력과 반응형 상태를 관리합니다.
+    - id: commands
+      label: Tauri Commands
+      detail: 입력을 검증하고 타입이 지정된 Rust 기능의 공개 경계를 제공합니다.
+    - id: services
+      label: Rust Services
+      detail: 생산성 기능 규칙, 창 수명 주기와 백그라운드 작업을 조정합니다.
+    - id: database
+      label: SQLite · SQLx
+      detail: 메모, 타이머, 집중 기록과 실행 상태를 로컬에 저장합니다.
+    - id: desktop
+      label: OS Integration
+      detail: 동의 기반 시스템 활동과 Tray, Autostart, Single Instance를 처리합니다.
+    - id: events
+      label: App Events
+      detail: 저장이나 상태 변경의 의미 이벤트를 모든 기능 창에 전달합니다.
+  edges:
+    - from: ui
+      to: commands
+      label: invoke 기능 요청
+    - from: commands
+      to: services
+      label: 검증 후 도메인 처리 위임
+    - from: services
+      to: database
+      label: 조회 · 트랜잭션 저장
+    - from: database
+      to: services
+      label: 저장 결과 반환
+    - from: services
+      to: desktop
+      label: 창 · OS 수명 주기 제어
+    - from: services
+      to: events
+      label: 변경 완료 이벤트
+    - from: events
+      to: ui
+      label: 부분 재조회 · 상태 갱신
+useCaseDiagram:
+  kind: use-case
+  title: 사용자 기능과 데스크탑 연동 유스케이스
+  description: 사용자가 Tobomi의 생산성 기능과 컴패니언을 이용하는 범위, Windows가 앱 수명 주기와 선택적 활동 감지에 참여하는 경계를 보여줍니다.
+  ariaLabel: 사용자와 Windows를 액터로 두고 Tobomi Desktop App 안의 메모 작성과 관리, 타이머 구성과 실행, 집중과 휴식 관리, 컴패니언 상호작용, 창과 트레이 제어, 시스템 활동 연동 유스케이스를 연결한 다이어그램
+  systemLabel: Tobomi Desktop App
+  actors:
+    - id: user
+      label: 사용자
+      detail: 생산성 기능을 이용하고 컴패니언과 상호작용하며 시스템 활동 연동 여부를 결정합니다.
+      side: left
+    - id: windows
+      label: Windows
+      detail: 트레이, 자동 실행, 단일 인스턴스와 동의받은 활동 상태를 애플리케이션에 제공합니다.
+      side: right
+  useCases:
+    - id: memo
+      label: 메모 작성·관리
+      detail: 블록형 메모와 체크리스트를 작성하고 여러 블록을 연속 선택·복사합니다.
+    - id: timer
+      label: 타이머 구성·실행
+      detail: 반복해서 사용할 타이머를 구성하고 시작, 일시정지와 완료 상태를 관리합니다.
+    - id: focus
+      label: 집중·휴식 관리
+      detail: 목표 기반 집중과 휴식 세션을 시작하고 남은 시간과 완료 기록을 확인합니다.
+    - id: companion
+      label: 컴패니언 상호작용
+      detail: 컴패니언을 클릭, 드래그하거나 작업 이벤트에 따른 애니메이션 피드백을 확인합니다.
+    - id: window-control
+      label: 창·트레이 제어
+      detail: 대시보드와 기능 창을 열고 숨기며 트레이에서 앱 표시와 종료를 제어합니다.
+    - id: activity
+      label: 시스템 활동 연동
+      detail: 종류별 동의 후 자리 비움, 잠금과 외부 타이핑 상태를 컴패니언 반응에 사용합니다.
+  relations:
+    - from: user
+      to: memo
+    - from: user
+      to: timer
+    - from: user
+      to: focus
+    - from: user
+      to: companion
+    - from: user
+      to: window-control
+    - from: user
+      to: activity
+    - from: windows
+      to: window-control
+    - from: windows
+      to: activity
 ---
 
-## 프로젝트 한눈에 보기
+## 프로젝트 핵심 스택
 
 Tobomi는 일상적인 작업 관리를 돕는 생산성 기능과 화면 위에서 반응하는 애니메이션 컴패니언을 결합한 개인 데스크탑 애플리케이션입니다. 현재 개발 중이며, 메모·타이머·집중 흐름과 컴패니언의 빠른 실행·상태 반응을 하나의 로컬 애플리케이션 안에서 연결하고 있습니다.
 
@@ -52,21 +149,8 @@ Tobomi는 일상적인 작업 관리를 돕는 생산성 기능과 화면 위에
 
 ## 시스템 흐름
 
-### 프론트엔드에서 로컬 시스템 기능까지
-
 Vue 컴포넌트는 네이티브 기능이나 SQL을 직접 다루지 않습니다. 기능별 서비스가 타입이 지정된 Tauri 커맨드를 호출하고, Rust 계층이 검증·비즈니스 규칙·데이터 저장과 운영체제 연동을 담당합니다. 변경 결과는 반환값과 애플리케이션 이벤트로 각 창의 Pinia 상태에 다시 반영됩니다.
-
-**텍스트 대체 설명:** Vue UI와 Pinia에서 발생한 사용자 동작은 기능별 서비스를 거쳐 Tauri Commands로 전달됩니다. 얇은 커맨드 경계는 Rust Services에 처리를 위임하고, Rust Services는 SQLite와 SQLx 기반 로컬 데이터, 사용자가 동의한 System Activity, Tray, Autostart와 Single Instance 기능으로 분기합니다. 처리 결과와 의미 이벤트는 다시 각 Vue 창과 컴패니언 상태로 돌아옵니다.
-
-| 계층 | 주요 책임 | 연결 관계 |
-| --- | --- | --- |
-| Vue UI / Pinia | 화면 상태, 사용자 입력, 기능별 창의 반응형 상태 | 기능별 TypeScript 서비스 호출 |
-| Tauri Commands | 입력 검증, 직렬화된 타입 계약, Rust 기능의 공개 경계 | Rust 도메인 서비스에 처리 위임 |
-| Rust Services | 메모·타이머·집중 규칙, 창 수명 주기, 이벤트와 백그라운드 작업 조정 | 로컬 데이터와 운영체제 기능 사용 |
-| SQLite / SQLx | 메모·타이머 정의·집중 기록과 실행 상태 저장, 마이그레이션 | Rust 커맨드만 접근 |
-| System Activity | 동의된 자리 비움·잠금·외부 타이핑 여부를 정제된 이벤트로 변환 | 컴패니언 상태와 반응 갱신 |
-| Tray | 대시보드·컴패니언 표시와 앱 종료 진입점 | Rust 창 관리와 안전 종료 흐름 호출 |
-| Autostart / Single Instance | OS 로그인 시 실행 등록과 중복 프로세스 차단 | 기존 앱 인스턴스와 컴패니언 창 유지 |
+상단 시퀀스 다이어그램은 UI 요청이 Tauri Commands와 Rust Services를 지나 로컬 데이터 또는 운영체제 기능을 처리하고, 완료 이벤트가 각 창의 상태로 돌아오는 순서를 보여줍니다. 이어지는 유스케이스 다이어그램은 사용자와 Windows를 외부 액터로 두고 메모, 타이머, 집중, 컴패니언과 데스크탑 연동 기능의 사용 범위를 구분합니다.
 
 ## 핵심 구현
 
@@ -102,7 +186,7 @@ Rust가 시스템 트레이를 소유하고 대시보드·컴패니언 표시, �
 - **OS를 자동 실행 상태의 단일 출처로 사용:** 앱 내부 사본과 실제 시작 프로그램 상태가 어긋나는 문제를 피합니다. 대신 설정 화면을 열 때 운영체제 상태를 다시 확인해야 합니다.
 - **동의 기반 시스템 활동:** 컴패니언이 작업 맥락에 반응할 수 있지만, 기본 비활성과 최소 신호 원칙으로 기능 범위를 제한합니다. 더 세밀한 맥락보다 개인정보 보호와 로컬 처리를 우선한 선택입니다.
 
-## 테스트·배포·안정성
+## 테스트·배포·운영 안정성
 
 프론트엔드 테스트는 Vitest와 happy-dom을 사용하며 컴포넌트, Pinia 스토어, 기능별 composable·service, 창 배치와 컴패니언 상태·애니메이션 규칙을 다룹니다. Rust에는 순수 상태 결정, SQLx 인메모리 데이터베이스와 마이그레이션, 메모·타이머·집중 규칙, 시스템 활동 전이와 창·트레이 흐름을 검증하는 단위 테스트가 포함되어 있습니다. 이번 콘텐츠 조사에서는 테스트와 빌드를 새로 실행하지 않았으므로 현재 통과 상태를 주장하지 않습니다.
 
@@ -120,7 +204,7 @@ Rust가 시스템 트레이를 소유하고 대시보드·컴패니언 표시, �
 
 ### 문제
 
-메모 기능을 블록별 도구로 명확하게 나누면서도, 사용자가 여러 메모를 한꺼번에 선택하고 복사할 때 흐름이 끊기지 않는 UI·UX가 필요했습니다.
+메모 기능을 블록별 도구로 명확하게 나누면서도, 사용자가 여러 블록을 한꺼번에 선택하고 복사할 때 흐름이 끊기지 않는 UI·UX가 필요했습니다.
 
 ### 대안 소개
 

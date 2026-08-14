@@ -16,14 +16,62 @@ techStack:
   - PixiJS
   - ONNX Runtime Web
   - WebGPU
+  - OpenCV.js
+  - ChArUco
   - WebRTC
   - Vitest
 cover: null
 gallery: []
 video: null
+diagram:
+  kind: sequence
+  title: 카메라 입력에서 디스플레이 출력까지
+  description: 카메라 프레임을 별도 Worker에서 분석하고, ChArUco 보정 데이터로 현실 평면과 화면 좌표를 맞춘 뒤 PixiJS 상호작용으로 전달하는 실시간 처리 흐름입니다.
+  ariaLabel: Camera Input, Detection Worker, ONNX Runtime Web과 WebGPU, Detection Result, ChArUco와 TPS 좌표 변환, PixiJS Interaction, Display Output 순서의 실시간 영상 처리 파이프라인
+  steps:
+    - id: camera
+      label: Camera Input
+      detail: WebRTC와 WHEP 스트림에서 VideoFrame 단위로 영상을 받습니다.
+    - id: worker
+      label: Detection Worker
+      detail: 목표 FPS를 조절하고 밀린 프레임보다 최신 프레임을 우선합니다.
+    - id: inference
+      label: ONNX · WebGPU
+      detail: 프레임 전처리, 객체 감지와 후처리를 GPU 우선 경로로 실행합니다.
+    - id: result
+      label: Detection Result
+      detail: 카메라 프레임 안의 컵 위치를 추적하고 색상 분류 결과를 안정화합니다.
+    - id: coordinate-transform
+      label: ChArUco · TPS
+      detail: ChArUco 보드로 측정한 카메라·화면 대응점을 이용해 감지 좌표를 프로그램 화면 좌표로 변환합니다.
+    - id: interaction
+      label: PixiJS Interaction
+      detail: 생성·유지·제거 상태에 맞춰 아틀라스 효과와 배경 영상을 제어합니다.
+    - id: display
+      label: Display Output
+      detail: 합성된 실시간 그래픽 장면을 Electron 전시 화면에 표시합니다.
+  edges:
+    - from: camera
+      to: worker
+      label: VideoFrame 전달
+    - from: worker
+      to: inference
+      label: 최신 프레임 선택
+    - from: inference
+      to: result
+      label: 박스 · 신뢰도 · 분류
+    - from: result
+      to: coordinate-transform
+      label: 카메라 픽셀 좌표
+    - from: coordinate-transform
+      to: interaction
+      label: 보정된 화면 좌표
+    - from: interaction
+      to: display
+      label: 합성 그래픽 장면
 ---
 
-## 프로젝트 한눈에 보기
+## 프로젝트 핵심 스택
 
 미디어테이블은 카메라 영상에서 테이블 위의 컵을 감지하고, 컵의 위치와 색상에 맞춘 애니메이션을 화면에 합성하는 전시용 데스크탑 애플리케이션입니다. 카메라 수신부터 객체 감지, 추적, 화면 좌표 보정, PixiJS 효과 재생까지 하나의 실시간 파이프라인으로 구성되어 있습니다.
 
@@ -31,6 +79,7 @@ video: null
 - 객체 감지: Web Worker 안의 ONNX Runtime Web 추론
 - GPU 처리: WebGPU 전처리와 추론, WASM 대체 경로
 - 상호작용 상태: 컵 위치 추적과 생성·유지·제거 이벤트
+- 좌표 캘리브레이션: OpenCV.js ChArUco 보드 측정과 TPS·호모그래피 변환
 - 화면 출력: PixiJS 아틀라스 애니메이션과 테이블 배경 영상
 - 실행 형태: Electron 기반 Windows 애플리케이션
 
@@ -48,24 +97,12 @@ video: null
 
 ## 담당 범위
 
-개인 프로젝트로 전체 개발을 담당했습니다. Electron 애플리케이션 수명 주기와 로컬 카메라 프록시 실행, Vue 기반 운영 화면, Worker 객체 감지 파이프라인, 추적·캘리브레이션, PixiJS 효과 재생, 에셋 패킹과 Windows 패키징을 구현했습니다. 기획과 디자인에는 참여하지 않았습니다.
+개인 프로젝트로 전체 개발을 담당했습니다. Electron 애플리케이션 수명 주기와 로컬 카메라 프록시 실행, Vue 기반 운영 화면, Worker 객체 감지 파이프라인, 추적과 ChArUco 좌표 캘리브레이션, PixiJS 효과 재생, 에셋 패킹과 Windows 패키징을 구현했습니다. 기획과 디자인에는 참여하지 않았습니다.
 
 ## 시스템 흐름
 
-### 카메라 입력에서 디스플레이 출력까지
-
-카메라 프레임이 메인 렌더링 흐름과 분리된 Worker에서 분석되고, 안정화된 감지 결과만 PixiJS 장면의 상호작용 상태로 전달됩니다.
-
-**텍스트 대체 설명:** Camera Input에서 받은 영상 프레임을 Detection Worker가 선택해 ONNX Runtime Web과 WebGPU로 분석합니다. 감지 결과는 추적과 좌표 보정을 거친 뒤 PixiJS Interaction에 전달되고, 최종 그래픽이 Display Output으로 표시됩니다.
-
-| 단계 | 처리 내용 | 다음 단계로 전달하는 값 |
-| --- | --- | --- |
-| Camera Input | WebRTC/WHEP 스트림에서 영상 프레임 수신 | `VideoFrame` |
-| Detection Worker | 목표 FPS 조절과 최신 프레임 우선 처리 | 추론할 프레임 |
-| ONNX Runtime Web / WebGPU | 전처리, 객체 감지, 후처리 | 컵의 박스·신뢰도·분류 결과 |
-| Detection Result | 위치 추적, 색상 안정화, 화면 좌표 보정 | 생성·유지·제거된 상호작용 엔티티 |
-| PixiJS Interaction | 엔티티 상태에 맞춰 아틀라스 효과와 배경 영상 제어 | 합성된 그래픽 장면 |
-| Display Output | Electron 창에 실시간 장면 표시 | 전시 화면의 시각적 반응 |
+카메라 프레임이 메인 렌더링 흐름과 분리된 Worker에서 분석되고, 안정화된 감지 위치는 ChArUco 보정 데이터와 TPS 변환을 거쳐 PixiJS 장면의 화면 좌표로 전달됩니다.
+상단 다이어그램은 Camera Input부터 Display Output까지 각 단계의 처리 책임과 다음 단계로 전달되는 결과를 순서대로 보여줍니다.
 
 ## 핵심 구현
 
@@ -85,9 +122,13 @@ Worker가 바쁜 동안 같은 카메라의 새 프레임이 도착하면 이전
 
 카메라별 추적기는 가까운 위치의 감지를 기존 객체와 연결하고, 연속 감지 횟수와 색상 투표 조건을 만족한 객체에만 활성 ID를 부여합니다. 활성화된 객체는 생성·유지·제거 이벤트로 변환되어 화면 상태 저장소에 반영됩니다. 이 과정은 일시적인 감지 누락과 색상 변화가 곧바로 효과 깜빡임이나 라벨 변경으로 이어지는 것을 줄이는 역할을 합니다.
 
-카메라 픽셀과 출력 화면의 위치 차이는 캘리브레이션 데이터로 보정합니다. 대응점이 충분하면 TPS 변환을 사용하고, 조건에 따라 호모그래피 또는 원본 좌표를 대체 경로로 사용합니다. 실행 중 새 캘리브레이션을 적용하면 해당 카메라의 추적 상태도 함께 초기화됩니다.
+### 4. ChArUco 보드로 맞춘 현실 평면과 화면 좌표
 
-### 4. PixiJS 효과와 아틀라스 자산 파이프라인
+카메라가 보는 테이블 평면과 프로그램의 출력 좌표는 원근, 설치 각도와 렌즈 특성 때문에 그대로 일치하지 않습니다. 캘리브레이션 모드에서는 일반 감지를 잠시 멈추고 카메라별 보정 프레임을 캡처합니다. OpenCV.js의 ChArUco detector가 보드의 코너와 ID를 검출하고, 카메라 픽셀 좌표 `pts_cam`과 보드 기준 화면 좌표 `pts_screen`의 대응점을 구성합니다.
+
+각 카메라에서 가장 많은 유효 코너가 잡힌 측정값을 선택하고, 모든 카메라의 측정이 성공했을 때 대응점과 RANSAC 호모그래피를 저장합니다. 런타임 좌표 변환은 대응점이 3개 이상이면 TPS를 우선 사용해 국소 왜곡까지 흡수하고, 불가능하면 3×3 호모그래피, 마지막에는 원본 좌표를 사용합니다. 새 보정값을 적용할 때 진행 중인 프레임과 추적 상태를 초기화해 서로 다른 좌표계의 결과가 섞이지 않게 했습니다.
+
+### 5. PixiJS 효과와 아틀라스 자산 파이프라인
 
 각 효과는 `created`, `updated`, `deleted` 세 단계의 애니메이션으로 구성됩니다. 원본 PNG 프레임은 별도 패커가 고정 크기의 그리드 시트와 manifest로 변환하며, 런타임은 manifest의 FPS, 반복 여부와 프레임 수를 기준으로 재생합니다.
 
@@ -98,12 +139,13 @@ Worker가 바쁜 동안 같은 카메라의 새 프레임이 도착하면 이전
 - **Electron과 브라우저 GPU 스택:** Vue 운영 UI, WebRTC, Web Worker, WebGPU와 PixiJS를 한 애플리케이션에서 연결할 수 있습니다. 반면 GPU 자원과 프레임 수명 주기를 애플리케이션에서 세심하게 관리해야 합니다.
 - **최신 프레임 우선 큐:** 모든 입력 프레임의 처리를 보장하지 않는 대신, 오래된 결과가 늦게 표시되는 것을 피하고 실시간 반응성을 우선합니다.
 - **WebGPU 우선, CPU·WASM 대체 경로:** 지원 환경에서는 GPU 경로를 사용하면서도 초기화 실패에 대비할 수 있습니다. 대체 경로별 성능 차이는 배포 장비에서 별도로 검증해야 합니다.
+- **ChArUco 대응점과 TPS:** 화면 전체의 국소 왜곡을 보정할 수 있지만, 보정 중에는 일반 감지를 잠시 중단하고 각 카메라에서 보드의 유효 코너를 충분히 확보해야 합니다. 측정 실패에 대비해 호모그래피와 원본 좌표 대체 경로를 유지했습니다.
 - **공유 Worker와 카메라별 Worker:** 하나의 추론 세션을 공유해 자원을 줄이는 구성과 카메라별 실행을 분리하는 구성을 설정으로 선택할 수 있습니다.
 - **아틀라스 전체 사전 로드:** 전시 중 로딩 변수를 줄이는 대신 초기 로드 시간과 GPU 메모리를 사용합니다. 현재 구현은 실행 중 안정성을 우선해 사전 로드 방식을 택했습니다.
 
-## 테스트·배포·현장 안정성
+## 테스트·배포·운영 안정성
 
-Vitest는 Electron main, preload와 Vue renderer 환경을 나눈 프로젝트 설정을 사용합니다. 저장소에는 설정 검증, 감지 서비스, 객체 추적, 전처리, YOLO 디코드, 색상 분류, TPS 좌표 변환, WebGPU 프로파일링, 아틀라스 로딩, 효과 재생과 상태 저장소를 대상으로 한 테스트가 있습니다. 현재 초안 작성 과정에서는 전체 테스트 통과 여부를 새로 검증하지 않았습니다.
+Vitest는 Electron main, preload와 Vue renderer 환경을 나눈 프로젝트 설정을 사용합니다. 저장소에는 설정 검증, 감지 서비스, 객체 추적, 전처리, YOLO 디코드, 색상 분류, TPS·호모그래피 좌표 변환, WebGPU 프로파일링, 아틀라스 로딩, 효과 재생과 상태 저장소를 대상으로 한 테스트가 있습니다. 현재 초안 작성 과정에서는 전체 테스트 통과 여부를 새로 검증하지 않았습니다.
 
 Windows 배포는 Electron Builder의 NSIS 설치형과 portable 빌드 스크립트로 구성되어 있으며, 모델·런타임·아틀라스 같은 실행 자원을 애플리케이션과 함께 배치합니다. 현재 오픈 전 전시 환경에 시범 설치해 운영하고 있습니다.
 

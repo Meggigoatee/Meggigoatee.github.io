@@ -1,9 +1,12 @@
 <template>
   <article v-if="project" class="section">
     <div class="container project-detail">
-      <header>
-        <NuxtLink class="back-link" to="/projects">← 프로젝트 목록</NuxtLink>
-        <p class="eyebrow">{{ project.category }} · {{ project.status }}</p>
+      <NuxtLink class="back-link" to="/projects">← 프로젝트 목록</NuxtLink>
+
+      <header class="project-header">
+        <p class="eyebrow">
+          {{ project.category }}<template v-if="isConfirmed(project.status)"> · {{ project.status }}</template>
+        </p>
         <h1>{{ project.title }}</h1>
         <p class="lead">{{ project.summary }}</p>
 
@@ -26,6 +29,7 @@
       <div v-if="project.cover" class="cover-frame">
         <img :src="project.cover" :alt="`${project.title} 대표 화면`">
       </div>
+
       <div v-else-if="showMediaPlaceholder" class="cover-frame cover-placeholder" aria-hidden="true">
         대표 이미지 영역
       </div>
@@ -38,6 +42,8 @@
       </section>
 
       <ProjectDiagram v-if="project.diagram" :diagram="project.diagram" />
+
+      <ProjectUseCaseDiagram v-if="project.useCaseDiagram" :diagram="project.useCaseDiagram" />
 
       <ContentRenderer class="project-content" :value="project" />
 
@@ -97,7 +103,11 @@ useSeoMeta({
 
 .back-link {
   display: inline-block;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-6);
+}
+
+.project-header {
+  margin-top: 0;
 }
 
 h1 {

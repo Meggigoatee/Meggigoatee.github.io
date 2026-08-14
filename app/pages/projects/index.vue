@@ -14,8 +14,8 @@
             <h2 id="featured-projects-heading">주요 프로젝트</h2>
           </div>
         </div>
-        <div class="project-grid">
-          <ProjectCard
+        <div class="featured-project-list">
+          <ProjectShowcase
             v-for="project in featuredProjects"
             :key="project.slug"
             :project="project"
@@ -67,6 +67,11 @@ useSeoMeta({
 
 .section-heading-compact h2 {
   font-size: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.featured-project-list {
+  display: grid;
+  gap: var(--space-7);
 }
 
 .additional-projects {

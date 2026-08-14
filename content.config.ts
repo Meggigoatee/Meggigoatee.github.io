@@ -40,6 +40,28 @@ export default defineContentConfig({
             to: z.string(),
             label: z.string()
           })).optional()
+        }).optional(),
+        useCaseDiagram: z.object({
+          kind: z.literal('use-case'),
+          title: z.string(),
+          description: z.string(),
+          ariaLabel: z.string(),
+          systemLabel: z.string(),
+          actors: z.array(z.object({
+            id: z.string(),
+            label: z.string(),
+            detail: z.string(),
+            side: z.enum(['left', 'right'])
+          })),
+          useCases: z.array(z.object({
+            id: z.string(),
+            label: z.string(),
+            detail: z.string()
+          })),
+          relations: z.array(z.object({
+            from: z.string(),
+            to: z.string()
+          }))
         }).optional()
       })
     })

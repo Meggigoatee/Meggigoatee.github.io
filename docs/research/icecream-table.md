@@ -90,9 +90,16 @@
   - 연속 감지와 색상 투표 후 객체 활성화
   - 생성·갱신·제거 이벤트 생성
   - 가까운 객체 중복 활성화를 막는 배제 반경
+- `src/renderer/src/services/charucoCalibration.ts`
+  - OpenCV.js와 `DICT_4X4_250` 사전으로 ChArUco 보드의 코너와 ID 검출
+  - `VideoFrame`을 `OffscreenCanvas`에 캡처해 카메라 픽셀 좌표와 보드 기준 화면 좌표의 대응점 구성
+  - 유효 코너 4개 이상에서 RANSAC 기반 3×3 호모그래피 계산
+- `src/renderer/src/services/homographyCalibrationService.ts`
+  - 보정 중 일반 감지를 중단하고 카메라별 캘리브레이션 프레임 측정
+  - 여러 시도 중 유효 코너가 가장 많은 측정값을 선택하고 모든 카메라가 성공했을 때 저장·적용
 - `src/renderer/src/services/tpsMapper.ts`
   - 카메라 좌표를 화면 좌표로 변환하는 TPS 구현
-  - 대응점 부족 시 호모그래피, 이후 항등 변환 순서의 대체 경로
+  - 대응점 3개 이상이면 TPS, 불가능하면 호모그래피, 이후 항등 변환 순서의 대체 경로
 - `src/renderer/src/components/EffectLayer.vue`
   - 효과 자산 준비, 엔티티 변화 감시, Pixi 효과 생성·이동·삭제 연결
   - 컵 생성 시 좌·우 테이블 배경 영상 트리거
@@ -130,7 +137,7 @@
 - ONNX Runtime Web의 WebGPU 우선·WASM 대체 실행
 - WebGPU 전처리와 CPU 대체 경로
 - YOLO 객체 감지, 색상 분류, 위치 추적
-- TPS·호모그래피 기반 화면 좌표 보정
+- OpenCV.js ChArUco 보드 측정과 TPS·호모그래피 기반 화면 좌표 보정
 - PixiJS 아틀라스 애니메이션과 테이블 배경 영상
 - Vitest 테스트 구성
 - Windows NSIS·portable 패키징 스크립트
@@ -168,7 +175,8 @@
 2. Detection Worker
 3. ONNX Runtime Web / WebGPU
 4. Detection Result
-5. PixiJS Interaction
-6. Display Output
+5. ChArUco / TPS Coordinate Transform
+6. PixiJS Interaction
+7. Display Output
 
-대체 설명에는 Worker의 프레임 선택, ONNX 추론, 추적·좌표 보정, PixiJS 효과 출력의 관계를 포함해야 한다. 시각적 화살표만으로 의미를 전달하지 않고 각 단계 이름과 설명을 DOM 텍스트로 제공한다.
+대체 설명에는 Worker의 프레임 선택, ONNX 추론, 추적, ChArUco 보드 측정과 카메라·화면 좌표 변환, PixiJS 효과 출력의 관계를 포함해야 한다. 시각적 화살표만으로 의미를 전달하지 않고 각 단계 이름과 설명을 DOM 텍스트로 제공한다.

@@ -23,11 +23,11 @@ cover: null
 gallery: []
 video: null
 diagram:
-  kind: system
-  title: 중앙 운영과 현장 재생의 분리 구조
-  description: 중앙의 i-playerHub가 각 i-syncPlayer를 직접 관리하고, 현장 플레이어들은 별도의 마스터·클라이언트 채널로 재생을 동기화합니다.
-  ariaLabel: i-playerHub에서 여러 i-syncPlayer로 상태 조회, 원격 명령, 업데이트 파일을 전달하고, i-syncPlayer 사이에서는 마스터가 클라이언트에 재생 명령과 시간 정보를 보내며, 각 플레이어의 Electron 화면은 선택적으로 Spout를 거쳐 Unity Receiver에 표시되는 구조
-  nodes:
+  kind: sequence
+  title: 중앙 관리에서 동기 재생과 외부 출력까지
+  description: i-playerHub의 장비별 직접 관리와 i-syncPlayer의 준비·재생·시간 보정, 선택적 Spout 출력까지를 실제 메시지 순서로 보여줍니다.
+  ariaLabel: i-playerHub가 Master와 Clients를 각각 직접 관리하고, Master가 operationId를 포함한 준비 명령을 보내면 Clients가 준비 상태를 응답한 뒤 재생 명령과 UDP 시간 정보를 받아 로컬 미디어를 재생하며, 각 장비의 Electron 화면은 선택적으로 Spout를 거쳐 Unity Receiver에 표시되는 순서
+  steps:
     - id: hub
       label: i-playerHub
       detail: 플레이어 등록, 상태 모니터링, 원격 명령과 업데이트 배포를 담당하는 중앙 앱
@@ -37,28 +37,49 @@ diagram:
     - id: player-client
       label: i-syncPlayer · Clients
       detail: 각 장비의 플레이리스트에서 같은 순번의 미디어를 준비하고 마스터 명령에 맞춰 재생하는 현장 앱들
+    - id: renderer
+      label: Player Renderer
+      detail: Master와 각 Client에서 장비별 로컬 미디어를 재생하는 Electron 렌더러
+    - id: spout
+      label: Player별 Spout
+      detail: 설정이 활성화된 장비에서 오프스크린 프레임을 공유 텍스처로 내보내는 선택적 출력 경로
     - id: receiver
-      label: Spout · Unity Receiver
-      detail: 선택적으로 Electron의 오프스크린 프레임을 공유 텍스처로 받아 전시 화면에 표시하는 출력 경로
+      label: Unity Receiver
+      detail: 각 장비의 Spout 공유 텍스처를 받아 해당 전시 화면에 표시하는 별도 프로세스
   edges:
     - from: hub
       to: player-master
-      label: 상태 조회 · 원격 명령 · 업데이트
+      label: 상태 조회 · 원격 지시
     - from: hub
       to: player-client
       label: 장비별 직접 관리
     - from: player-master
       to: player-client
-      label: 재생 명령 · 준비 상태 · 시간 보정
-    - from: player-master
-      to: receiver
-      label: 선택적 영상 출력
+      label: prepare · operationId
     - from: player-client
+      to: player-master
+      label: ready · notFound
+    - from: player-master
+      to: player-client
+      label: play · operationId
+    - from: player-master
+      to: player-client
+      label: UDP 시간 정보
+    - from: player-master
+      to: renderer
+      label: Master 로컬 항목 재생
+    - from: player-client
+      to: renderer
+      label: 장비별 로컬 항목 재생
+    - from: renderer
+      to: spout
+      label: 오프스크린 프레임
+    - from: spout
       to: receiver
-      label: 선택적 영상 출력
+      label: 공유 텍스처 표시
 ---
 
-## 프로젝트 한눈에 보기
+## 프로젝트 핵심 스택
 
 i-syncPlayer System은 여러 Windows 장비에서 이미지와 비디오를 함께 재생하고, 중앙 장비에서 각 플레이어의 상태와 업데이트를 관리하는 전시 운영 시스템입니다. 중앙 통제 앱인 i-playerHub와 현장 재생 앱인 i-syncPlayer를 하나의 사례로 구성했습니다.
 
@@ -100,7 +121,7 @@ i-syncPlayer System은 여러 Windows 장비에서 이미지와 비디오를 함
 4. 클라이언트는 준비 완료 여부를 응답하고, 재생 중에는 마스터가 보낸 시간 정보로 로컬 재생 속도를 보정합니다.
 5. Spout 출력이 활성화된 장비는 Electron 화면을 공유 텍스처로 내보내고 Unity 수신기가 이를 표시합니다.
 
-상단의 `diagram` 데이터에는 시각적 다이어그램과 동일한 내용을 읽을 수 있도록 제목, 설명, 대체 텍스트, 노드와 연결 정보를 함께 담았습니다.
+상단 시퀀스 다이어그램은 Hub가 Master와 Clients를 각각 직접 관리하는 흐름, Master와 Clients 사이의 준비·재생·시간 보정, 각 장비 내부의 선택적 Spout 출력 순서를 구분합니다. `Player별 Spout`와 `Unity Receiver`는 하나의 공유 장비가 아니라 Spout 설정이 활성화된 플레이어마다 존재할 수 있는 출력 경로를 뜻합니다.
 
 ## 핵심 구현
 
@@ -137,7 +158,7 @@ i-syncPlayer의 Windows 릴리스는 설치 파일, 업데이트 메타데이터
 - **내부 파일 서버 기반 업데이트:** 인터넷 연결이 없는 환경에서도 중앙 장비에서 배포할 수 있습니다. 최초 설치와 릴리스 반입은 수동이며, 다운로드 중에는 중앙 파일 서버가 실행 중이어야 합니다.
 - **Spout와 Unity 연동:** 웹 렌더링 결과를 Windows 그래픽 파이프라인의 다른 프로세스와 연결할 수 있습니다. 네이티브 모듈, 그래픽 어댑터와 별도 수신기 프로세스가 추가되어 배포 장비별 검증이 중요합니다.
 
-## 테스트·배포·현장 안정성
+## 테스트·배포·운영 안정성
 
 두 애플리케이션 모두 TypeScript와 Vitest 기반 테스트를 갖고 있습니다. i-playerHub 쪽에서는 장비 목록 검증, 병렬 명령, 중복되지 않는 상태 폴링, 응답 형식 검사, 업데이트 릴리스 검증과 파일 서버의 범위 요청을 다룹니다. i-syncPlayer 쪽에서는 동기화 프로토콜, 오래된 작업 무시, 미디어 사전 준비, 플레이리스트 누락 처리, 원격 제어, 효과 출력과 업데이트 상태 전이를 검사합니다. 현재 콘텐츠 작성 과정에서는 전체 테스트 통과 여부를 새로 실행해 확인하지 않았습니다.
 

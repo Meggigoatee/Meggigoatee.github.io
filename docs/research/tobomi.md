@@ -28,7 +28,7 @@
 - `period`, `role`, `team`
 - `techStack`, `cover`, `gallery`, `video`
 
-Tobomi는 `order: 4`, `status: 개발 중`, `featured: true`로 작성했다. 계획서에서 개인 프로젝트임은 확인되므로 `team: 개인 프로젝트`로 기록했다. 정확한 역할과 기간은 확인되지 않아 각각 `확인 필요`, `null`로 두었다. 스키마에 없는 다이어그램 frontmatter는 추가하지 않고 본문의 표와 텍스트 대체 설명으로 제공했다.
+Tobomi는 `order: 4`, `status: 개발 중 · 데모 출시 예정`, `featured: true`로 작성했다. 개인 프로젝트와 사용자가 확인한 담당 범위·기간을 각각 `team`, `role`, `period`에 기록했다. 현재 스키마의 `diagram` 필드에는 처리 주체를 `steps`로, 주체 사이의 요청과 반환을 `edges`로 구성했다.
 
 ## 확인한 근거
 
@@ -184,26 +184,33 @@ Tobomi는 `order: 4`, `status: 개발 중`, `featured: true`로 작성했다. �
 
 ## 확인이 필요한 항목
 
-- 개발 시작 시점과 공개 가능한 작업 기간
-- 기획, UI 디자인, 캐릭터 디자인·에셋 제작의 정확한 담당 범위
-- 현재 지원 대상 운영체제와 실제 기기 검증 범위
-- 외부 공개, 베타 배포와 정식 출시 계획
+- 실제 기기 검증 범위와 macOS 지원 시점
 - 공개 저장소·데모·다운로드 링크 제공 여부
-- 정량적인 시작 속도, 메모리 사용량과 안정성 결과
+- 정량적인 시작 속도와 장기 실행 안정성 결과
 - 대표 사용자 시나리오와 사용성 검증 결과
 - 공개 가능한 화면·캐릭터 이미지·영상
-- 대표 기술 판단의 문제, 검토 대안, 결정 이유와 결과
 
 ## 다이어그램 전달 데이터
 
-공개 콘텐츠 본문에 다음 계층을 접근 가능한 표와 텍스트 대체 설명으로 기록했다.
+공개 콘텐츠 frontmatter에 다음 처리 주체와 메시지를 시퀀스 데이터로 기록했다.
 
-1. Vue UI / Pinia
-2. Tauri Commands
-3. Rust Services
-4. SQLite / SQLx
-5. System Activity
-6. Tray
-7. Autostart / Single Instance
+1. Vue UI / Pinia → Tauri Commands: `invoke` 기능 요청
+2. Tauri Commands → Rust Services: 검증 후 도메인 처리 위임
+3. Rust Services → SQLite / SQLx: 조회 또는 트랜잭션 저장
+4. SQLite / SQLx → Rust Services: 저장 결과 반환
+5. Rust Services → OS Integration: 창과 운영체제 수명 주기 제어
+6. Rust Services → App Events: 변경 완료 이벤트
+7. App Events → Vue UI / Pinia: 부분 재조회와 상태 갱신
 
-시각 컴포넌트로 전환할 때는 Rust Services 아래에 네 개의 시스템 분기를 배치하고, 처리 결과와 의미 이벤트가 Vue UI / Pinia로 돌아오는 역방향 관계도 설명 텍스트에 포함해야 한다. 화살표나 색상만으로 계층 관계를 전달하지 않는다.
+이는 모든 기능 요청이 데이터베이스와 운영체제 분기를 동시에 거친다는 뜻이 아니라, Rust Services가 요청 종류에 따라 담당 경계를 선택하고 완료 결과를 이벤트로 각 창에 전파하는 전체 흐름을 압축한 것이다. 각 step의 `detail`과 전체 `ariaLabel`에도 같은 책임을 텍스트로 제공한다.
+
+유스케이스 다이어그램은 사용자를 주요 액터, Windows를 지원 액터로 두고 다음 기능 범위를 Tobomi Desktop App 경계 안에 배치한다.
+
+- 메모 작성·관리
+- 타이머 구성·실행
+- 집중·휴식 관리
+- 컴패니언 상호작용
+- 창·트레이 제어
+- 동의 기반 시스템 활동 연동
+
+사용자는 여섯 유스케이스에 모두 연결되고, Windows는 창·트레이 제어와 시스템 활동 연동에 연결된다. 이는 운영체제가 생산성 기능을 직접 실행한다는 뜻이 아니라 데스크탑 수명 주기와 선택적 활동 상태를 제공한다는 의미다.
