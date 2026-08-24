@@ -6,7 +6,7 @@ category: 데스크탑 시스템
 status: 시범 운영 중
 featured: true
 summary: 여러 전시 장비의 미디어 재생을 맞추고, 중앙에서 장비 상태와 업데이트를 관리하는 Windows 기반 통합 시스템입니다.
-period: 7월 31일–8월 21일
+period: 2026년 7월 31일–8월 21일
 role: i-playerHub 기획 제안·신규 개발 · i-syncPlayer 인수 후 개선
 team: 개인 프로젝트
 techStack:

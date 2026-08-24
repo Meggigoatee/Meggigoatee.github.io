@@ -238,7 +238,7 @@ useSeoMeta({
 h1 {
   max-width: 12ch;
   margin: 0;
-  font-size: clamp(2.25rem, 9.2vw, 7rem);
+  font-size: clamp(2.25rem, 6.5vw, 5.5rem);
   line-height: 0.95;
   letter-spacing: -0.03em;
 }
@@ -479,7 +479,7 @@ h1 span {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .hero-grid {
     grid-template-columns: 1fr;
     gap: var(--space-8);
