@@ -28,7 +28,8 @@ export default defineNuxtConfig({
         lang: 'ko'
       },
       link: [
-        { rel: 'icon', href: `${baseURL}favicon.ico` }
+        { rel: 'icon', type: 'image/svg+xml', href: `${baseURL}favicon.svg` },
+        { rel: 'shortcut icon', href: `${baseURL}favicon.ico` }
       ],
       meta: [
         { name: 'description', content: '개발자 포트폴리오' },
