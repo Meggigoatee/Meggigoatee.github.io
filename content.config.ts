@@ -46,6 +46,30 @@ export default defineContentConfig({
             label: z.string()
           })).optional()
         }).optional(),
+        topologyDiagram: z.object({
+          kind: z.literal('topology'),
+          title: z.string(),
+          description: z.string(),
+          ariaLabel: z.string(),
+          groups: z.array(z.object({
+            id: z.string(),
+            label: z.string(),
+            caption: z.string().optional(),
+            nodes: z.array(z.object({
+              id: z.string(),
+              label: z.string(),
+              detail: z.string()
+            }))
+          })),
+          links: z.array(z.object({
+            from: z.string(),
+            to: z.string(),
+            label: z.string(),
+            kind: z.string().optional(),
+            bidirectional: z.boolean().optional(),
+            note: z.string().optional()
+          }))
+        }).optional(),
         useCaseDiagram: z.object({
           kind: z.literal('use-case'),
           title: z.string(),

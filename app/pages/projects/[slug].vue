@@ -58,6 +58,8 @@
         </ul>
       </section>
 
+      <ProjectTopologyDiagram v-if="project.topologyDiagram" :diagram="project.topologyDiagram" />
+
       <ProjectDiagram v-if="project.diagram" :diagram="project.diagram" />
 
       <ProjectUseCaseDiagram v-if="project.useCaseDiagram" :diagram="project.useCaseDiagram" />

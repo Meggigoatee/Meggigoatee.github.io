@@ -82,7 +82,7 @@ Electron은 Core가 아닌 Desktop 기술로 분류한다.
 
 ### 메인 프로젝트 4개
 
-1. i-syncPlayer System
+1. i-hms 전시 통합 운영 시스템
 2. Icecream Table
 3. 황금마패의 길
 4. Tobomi
@@ -101,25 +101,25 @@ Electron은 Core가 아닌 Desktop 기술로 분류한다.
 
 다음 프로젝트는 읽기 전용으로 조사한다. 포트폴리오 작성 과정에서 원본 프로젝트를 수정하지 않는다.
 
-### i-syncPlayer System
+### i-hms 전시 통합 운영 시스템
 
-두 저장소를 하나의 통합 시스템 사례로 소개한다.
+세 저장소를 하나의 통합 시스템 사례로 소개한다. 중앙 통제 앱으로 신규 개발했던 i-playerHub는 사용하지 않으며, 중앙 통제는 기존 전시장 콘솔인 i-hms가 맡는다.
 
-- 중앙 통제 앱: `D:\workspace\RnD\i-playerHub`
+- 중앙 콘솔: `D:\workspace\RnD\i-hms`
+- 각 PC 에이전트: `D:\workspace\RnD\i-hms_agent`
 - 현장 재생 앱: `D:\workspace\RnD\i-syncPlayer`
 
 현재 확인된 내용:
 
-- Electron과 TypeScript 기반 데스크탑 애플리케이션
-- 중앙 플레이어 등록, 상태 모니터링과 명령 전송
-- 마스터·클라이언트 기반 미디어 재생 동기화
-- 플레이리스트와 미디어 카탈로그 관리
-- WebSocket 기반 통신
-- 업데이트 저장소와 HTTP 파일 서버
-- `electron-updater` 기반 설치·다운그레이드 흐름
-- Spout 네이티브 출력
-- Unity 수신기 프로세스 연동
-- Vitest 테스트
+- Electron 기반 Windows 데스크탑 애플리케이션 세 개
+- 전원 시퀀스, 장비 사양 조회, 로그를 다루는 중앙 콘솔
+- 플레이어와 별개로 각 PC에 상주하며 명령을 실행하는 에이전트
+- 콘솔의 영상·효과 반입 오케스트레이션과 파일명 번호 재배치
+- 슬롯 키 기반 마스터·클라이언트 재생 동기화
+- 업데이트 게시 저장소와 읽기 전용 HTTP 파일 서버
+- `electron-updater` 기반 순차 설치·이전 버전 적용 흐름
+- Spout 네이티브 출력과 Unity 수신기 프로세스 연동
+- i-syncPlayer의 Vitest 테스트와 i-hms의 하네스 기반 검증
 
 ### Icecream Table
 
@@ -220,7 +220,7 @@ Tobomi는 정식 출시 완료 프로젝트처럼 표현하지 않고 데모 공
 ```text
 content/
 └─ projects/
-   ├─ i-syncplayer-system.md
+   ├─ ihms-exhibition-system.md
    ├─ icecream-table.md
    ├─ golden-horse-pass-road.md
    ├─ tobomi.md
@@ -282,21 +282,23 @@ video: null
 7. 테스트·배포·현장 안정성
 8. 문제 → 대안 소개 → 결정 이유 → 결과
 
-### i-syncPlayer System 다이어그램
+### i-hms 전시 통합 운영 시스템 다이어그램
 
 표현할 관계:
 
 ```text
-i-playerHub
-├─ 플레이어 등록·상태 모니터링
-├─ 원격 명령
-└─ 업데이트 저장소·파일 서버
-        ↓
-여러 i-syncPlayer
-├─ WebSocket 동기화
-├─ 플레이리스트·미디어 재생
-├─ 자동 업데이트
-└─ Spout 출력 → Unity Receiver
+i-hms 통제 콘솔
+├─ 전원 시퀀스·장비 사양·로그
+├─ 영상·효과 반입 오케스트레이션
+└─ 업데이트 게시 저장소·파일 서버
+        │
+        ├─(에이전트 경유)→ 각 PC의 에이전트
+        │                   └─ 전원·사양·파일 배치·플레이어 정지와 재시작
+        └─(직통)──────────→ 각 PC의 i-syncPlayer
+                            ├─ 슬롯 키 기반 마스터·클라이언트 동기화
+                            ├─ 폴더가 소유하는 재생 순서
+                            ├─ 지시 시점에 수행하는 업데이트 설치
+                            └─ Spout 출력 → Unity Receiver
 ```
 
 ### Icecream Table 다이어그램
@@ -435,12 +437,12 @@ video: null
 
 다음 순서로 작성한다.
 
-1. i-syncPlayer System
+1. i-hms 전시 통합 운영 시스템
 2. Icecream Table
 3. 황금마패의 길
 4. Tobomi
 
-i-syncPlayer System 초안을 먼저 작성해 콘텐츠 깊이와 문체를 확정한 뒤 나머지 프로젝트에 같은 기준을 적용한다.
+i-hms 전시 통합 운영 시스템 초안을 먼저 작성해 콘텐츠 깊이와 문체를 확정한 뒤 나머지 프로젝트에 같은 기준을 적용한다.
 
 ### 4단계: 사용자 확인
 
@@ -493,6 +495,6 @@ i-syncPlayer System 초안을 먼저 작성해 콘텐츠 깊이와 문체를 확
 2. `@nuxt/content` 도입의 현재 Nuxt 4 호환성 확인
 3. Content Collection 스키마와 프로젝트 Markdown 구조 구현
 4. 기존 7개 프로젝트 데이터를 새 구조로 이전
-5. i-syncPlayer System의 심층 콘텐츠 초안 작성
+5. i-hms 전시 통합 운영 시스템의 심층 콘텐츠 초안 작성
 
 구현 중 사용자의 역할, 기간, 팀 구성이나 결과가 필요해지면 추측하지 말고 질문한다.
