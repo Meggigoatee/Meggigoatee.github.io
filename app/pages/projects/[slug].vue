@@ -24,6 +24,23 @@
             <dd>{{ project.team }}</dd>
           </div>
         </dl>
+
+        <section v-if="project.links?.length" class="project-links" aria-labelledby="links-heading">
+          <h2 id="links-heading" class="eyebrow">관련 링크</h2>
+          <ul>
+            <li v-for="link in project.links" :key="link.url">
+              <a
+                class="button button-secondary"
+                :href="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{ link.label }} <span aria-hidden="true">↗</span>
+              </a>
+              <span v-if="link.description">{{ link.description }}</span>
+            </li>
+          </ul>
+        </section>
       </header>
 
       <div v-if="project.cover" class="cover-frame">
@@ -145,6 +162,35 @@ h1 {
   margin: var(--space-2) 0 0;
 }
 
+.project-links {
+  margin-top: var(--space-7);
+}
+
+.project-links h2 {
+  margin: 0 0 var(--space-3);
+  font-size: 0.78rem;
+}
+
+.project-links ul {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-links li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.project-links span:not([aria-hidden]) {
+  color: var(--color-muted);
+  font-size: 0.92rem;
+}
+
 .cover-frame {
   display: grid;
   overflow: hidden;
@@ -159,7 +205,7 @@ h1 {
 .cover-frame img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .cover-placeholder {

@@ -17,6 +17,11 @@ export default defineContentConfig({
         role: z.string().nullable(),
         team: z.string().nullable(),
         techStack: z.array(z.string()),
+        links: z.array(z.object({
+          label: z.string(),
+          url: z.string(),
+          description: z.string().optional()
+        })).optional(),
         cover: z.string().nullable(),
         gallery: z.array(z.string()),
         video: z.string().nullable(),

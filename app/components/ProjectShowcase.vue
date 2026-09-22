@@ -33,9 +33,21 @@
         </li>
       </ul>
 
-      <NuxtLink class="detail-link" :to="`/projects/${project.slug}`">
-        프로젝트 상세 보기 <span aria-hidden="true">→</span>
-      </NuxtLink>
+      <div class="showcase-links">
+        <NuxtLink class="detail-link" :to="`/projects/${project.slug}`">
+          프로젝트 상세 보기 <span aria-hidden="true">→</span>
+        </NuxtLink>
+
+        <a
+          v-if="primaryLink"
+          class="detail-link external-link"
+          :href="primaryLink.url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ primaryLink.label }} <span aria-hidden="true">↗</span>
+        </a>
+      </div>
     </div>
 
     <div v-if="project.diagram" class="showcase-visual">
@@ -47,11 +59,12 @@
 <script setup lang="ts">
 import type { ProjectsCollectionItem } from '@nuxt/content'
 
-defineProps<{
+const props = defineProps<{
   project: ProjectsCollectionItem
 }>()
 
 const isConfirmed = (value: string | null) => Boolean(value && value !== '확인 필요')
+const primaryLink = computed(() => props.project.links?.[0])
 </script>
 
 <style scoped>
@@ -136,11 +149,21 @@ h3 a {
   font-weight: 700;
 }
 
+.showcase-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-6);
+}
+
 .detail-link {
   display: inline-flex;
   gap: var(--space-2);
-  margin-top: var(--space-6);
   font-weight: 800;
+}
+
+.external-link {
+  color: var(--color-muted);
 }
 
 .showcase-visual :deep(.diagram) {

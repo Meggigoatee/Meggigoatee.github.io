@@ -19,23 +19,37 @@
       </li>
     </ul>
 
-    <NuxtLink
-      v-if="showDetailLink"
-      class="detail-link"
-      :to="`/projects/${project.slug}`"
-    >
-      프로젝트 보기 <span aria-hidden="true">→</span>
-    </NuxtLink>
+    <div v-if="showDetailLink || primaryLink" class="card-links">
+      <a
+        v-if="primaryLink"
+        class="detail-link external-link"
+        :href="primaryLink.url"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ primaryLink.label }} <span aria-hidden="true">↗</span>
+      </a>
+
+      <NuxtLink
+        v-if="showDetailLink"
+        class="detail-link"
+        :to="`/projects/${project.slug}`"
+      >
+        프로젝트 보기 <span aria-hidden="true">→</span>
+      </NuxtLink>
+    </div>
   </article>
 </template>
 
 <script setup lang="ts">
 import type { ProjectsCollectionItem } from '@nuxt/content'
 
-defineProps<{
+const props = defineProps<{
   project: ProjectsCollectionItem
   showDetailLink?: boolean
 }>()
+
+const primaryLink = computed(() => props.project.links?.[0])
 </script>
 
 <style scoped>
@@ -96,12 +110,22 @@ p {
   font-weight: 700;
 }
 
-.detail-link {
-  display: inline-flex;
-  align-self: flex-end;
-  gap: var(--space-2);
+.card-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2) var(--space-4);
   margin-top: auto;
   padding-top: var(--space-6);
+}
+
+.detail-link {
+  display: inline-flex;
+  gap: var(--space-2);
   font-weight: 800;
+}
+
+.external-link {
+  color: var(--color-muted);
 }
 </style>
