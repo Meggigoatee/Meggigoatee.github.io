@@ -8,7 +8,7 @@ featured: false
 summary: 관람객의 얼굴 사진을 바탕으로 AI 아바타를 생성하고, 얼굴 편집과 프레임 합성을 거쳐 인쇄물과 QR 다운로드로 전달하는 체험형 키오스크입니다.
 period: null
 role: 확인 필요
-team: 확인 필요
+team: 회사 프로젝트
 techStack:
   - Electron
   - Vue 3

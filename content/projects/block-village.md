@@ -8,7 +8,7 @@ featured: false
 summary: 카메라로 감지한 오브젝트의 종류와 위치를 길·철로·강·하늘길로 연결하고, 움직이는 교통수단과 장식으로 마을 풍경을 구성하는 전시 프로그램입니다.
 period: null
 role: 확인 필요
-team: 확인 필요
+team: 회사 프로젝트
 techStack:
   - Electron
   - Vue 3

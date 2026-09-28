@@ -20,7 +20,7 @@
             <dd>{{ project.role }}</dd>
           </div>
           <div v-if="isConfirmed(project.team)">
-            <dt>구성</dt>
+            <dt>구분</dt>
             <dd>{{ project.team }}</dd>
           </div>
         </dl>

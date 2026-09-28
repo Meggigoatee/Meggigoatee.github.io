@@ -8,7 +8,7 @@ featured: false
 summary: 여러 해시태그의 최신 소셜 미디어 게시물을 수집해 초광폭 전시 화면의 포토 카드로 순환 표시하는 Electron 애플리케이션입니다.
 period: null
 role: 확인 필요
-team: 확인 필요
+team: 회사 프로젝트
 techStack:
   - Electron
   - Electron Forge
