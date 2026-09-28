@@ -20,8 +20,15 @@ techStack:
   - jsQR
   - Nuxt UI
   - Tailwind CSS
-cover: null
-gallery: []
+cover: /images/golden-trace-home.png
+gallery:
+  - /images/golden-trace-map.png
+  - /images/golden-trace-stamps.png
+  - /images/golden-trace-stories.png
+  - /images/golden-trace-docent.png
+  - /images/golden-trace-ar-camera.png
+  - /images/golden-trace-ar-gallery.png
+imageLayout: portrait
 video: null
 diagram:
   kind: sequence

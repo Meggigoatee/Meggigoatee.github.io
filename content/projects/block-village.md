@@ -18,8 +18,10 @@ techStack:
   - Bezier.js
   - Python
   - Vitest
-cover: null
-gallery: []
+cover: /images/block-village-scene.png
+gallery:
+  - /images/block-village-detection.png
+  - /images/block-village-installation.jpg
 video: null
 ---
 

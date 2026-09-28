@@ -24,6 +24,7 @@ export default defineContentConfig({
         })).optional(),
         cover: z.string().nullable(),
         gallery: z.array(z.string()),
+        imageLayout: z.enum(['landscape', 'portrait']).optional(),
         video: z.string().nullable(),
         diagram: z.object({
           kind: z.string(),

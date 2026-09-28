@@ -12,7 +12,22 @@ pnpm install
 pnpm dev
 ```
 
-기본 정보는 `app/data/profile.ts`, 프로젝트 목록은 `app/data/projects.ts`에서 수정합니다.
+기본 정보는 `app/data/profile.ts`, 프로젝트 정보는 `content/projects/*.md`에서 수정합니다.
+
+## 프로젝트 이미지 추가
+
+이미지를 `public/images/`에 넣고 해당 프로젝트 Markdown 파일의 frontmatter에 경로를 적습니다. `cover`가 첫 슬라이드이며 `gallery`의 이미지가 뒤에 이어집니다. 대표 이미지 없이 `gallery`만 사용해도 됩니다.
+
+```yaml
+cover: /images/example-cover.webp
+gallery:
+  - /images/example-detail-1.webp
+  - /images/example-detail-2.webp
+```
+
+세로형 화면을 주로 보여주는 프로젝트에는 `imageLayout: portrait`를 추가합니다.
+
+이미지가 한 장이면 탐색 버튼이 표시되지 않습니다. 여러 장이면 버튼, 하단 선택점, 키보드 좌우 화살표, 모바일 좌우 스와이프로 넘길 수 있습니다.
 
 ## 명령어
 
@@ -38,4 +53,4 @@ pnpm check        # 전체 로컬 검사
 
 ## 배포 전 확인
 
-개인 정보와 소개는 `app/data/profile.ts`, 프로젝트 정보는 `app/data/projects.ts`에서 관리합니다.
+개인 정보와 소개는 `app/data/profile.ts`, 프로젝트 정보는 `content/projects/*.md`에서 관리합니다.

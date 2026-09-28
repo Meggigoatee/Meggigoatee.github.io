@@ -18,8 +18,11 @@ techStack:
   - OffscreenCanvas
   - Sharp
   - QR Code
-cover: null
-gallery: []
+cover: /images/wando-avatar-start.png
+gallery:
+  - /images/wando-avatar-photo-review.png
+  - /images/wando-avatar-selection.png
+  - /images/wando-avatar-result.png
 video: null
 ---
 

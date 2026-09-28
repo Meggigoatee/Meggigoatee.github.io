@@ -43,11 +43,15 @@
         </section>
       </header>
 
-      <div v-if="project.cover" class="cover-frame">
-        <img :src="project.cover" :alt="`${project.title} 대표 화면`">
-      </div>
+      <ProjectImageSlider
+        v-if="project.cover || project.gallery.length"
+        :title="project.title"
+        :cover="project.cover"
+        :gallery="project.gallery"
+        :layout="project.imageLayout"
+      />
 
-      <div v-else-if="showMediaPlaceholder" class="cover-frame cover-placeholder" aria-hidden="true">
+      <div v-else-if="showMediaPlaceholder" class="cover-placeholder" aria-hidden="true">
         대표 이미지 영역
       </div>
 
@@ -65,16 +69,6 @@
       <ProjectUseCaseDiagram v-if="project.useCaseDiagram" :diagram="project.useCaseDiagram" />
 
       <ContentRenderer class="project-content" :value="project" />
-
-      <section v-if="project.gallery.length" class="gallery" aria-labelledby="gallery-heading">
-        <h2 id="gallery-heading">프로젝트 화면</h2>
-        <img
-          v-for="image in project.gallery"
-          :key="image"
-          :src="image"
-          :alt="`${project.title} 프로젝트 화면`"
-        >
-      </section>
 
       <video v-if="project.video" class="project-video" controls :src="project.video">
         브라우저가 영상 재생을 지원하지 않습니다.
@@ -193,7 +187,7 @@ h1 {
   font-size: 0.92rem;
 }
 
-.cover-frame {
+.cover-placeholder {
   display: grid;
   overflow: hidden;
   aspect-ratio: 16 / 9;
@@ -201,31 +195,19 @@ h1 {
   place-items: center;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: var(--color-surface);
-}
-
-.cover-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.cover-placeholder {
   color: var(--color-muted);
   background: linear-gradient(145deg, var(--color-surface), var(--color-accent-soft));
 }
 
 .tech-section,
 .project-content,
-.gallery,
 .project-video {
   margin-top: var(--space-8);
   padding-top: var(--space-7);
   border-top: 1px solid var(--color-border);
 }
 
-.tech-section h2,
-.gallery h2 {
+.tech-section h2 {
   margin-top: 0;
 }
 
@@ -271,17 +253,6 @@ h1 {
   margin-top: var(--space-2);
 }
 
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-  gap: var(--space-4);
-}
-
-.gallery h2 {
-  grid-column: 1 / -1;
-}
-
-.gallery img,
 .project-video {
   width: 100%;
   border-radius: var(--radius-lg);
