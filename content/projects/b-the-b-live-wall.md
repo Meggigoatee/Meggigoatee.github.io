@@ -18,8 +18,9 @@ techStack:
   - Pinia
   - Electron Store
   - Vitest
-cover: null
-gallery: []
+cover: /images/b-the-b-live-wall.png
+gallery:
+  - /images/b-the-b-live-wall-installation.jpg
 video: null
 ---
 
