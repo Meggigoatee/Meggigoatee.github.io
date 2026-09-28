@@ -22,7 +22,8 @@ techStack:
   - Vitest
 cover: null
 gallery: []
-video: null
+video: /videos/media-table-demo.mp4
+videoPoster: /images/media-table-video-poster.jpg
 diagram:
   kind: sequence
   title: 카메라 입력에서 디스플레이 출력까지

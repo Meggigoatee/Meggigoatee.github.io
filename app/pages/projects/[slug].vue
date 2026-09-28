@@ -51,9 +51,22 @@
         :layout="project.imageLayout"
       />
 
-      <div v-else-if="showMediaPlaceholder" class="cover-placeholder" aria-hidden="true">
+      <div v-else-if="showMediaPlaceholder && !project.video" class="cover-placeholder" aria-hidden="true">
         대표 이미지 영역
       </div>
+
+      <video
+        v-if="project.video"
+        class="project-video"
+        controls
+        playsinline
+        preload="metadata"
+        :src="project.video"
+        :poster="project.videoPoster || undefined"
+        :aria-label="`${project.title} 시연 영상`"
+      >
+        브라우저가 영상 재생을 지원하지 않습니다.
+      </video>
 
       <section class="tech-section" aria-labelledby="tech-heading">
         <h2 id="tech-heading">기술 스택</h2>
@@ -70,9 +83,6 @@
 
       <ContentRenderer class="project-content" :value="project" />
 
-      <video v-if="project.video" class="project-video" controls :src="project.video">
-        브라우저가 영상 재생을 지원하지 않습니다.
-      </video>
     </div>
   </article>
 </template>
@@ -200,8 +210,7 @@ h1 {
 }
 
 .tech-section,
-.project-content,
-.project-video {
+.project-content {
   margin-top: var(--space-8);
   padding-top: var(--space-7);
   border-top: 1px solid var(--color-border);
@@ -255,6 +264,7 @@ h1 {
 
 .project-video {
   width: 100%;
+  margin-top: var(--space-8);
   border-radius: var(--radius-lg);
 }
 </style>
