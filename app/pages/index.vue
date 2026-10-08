@@ -179,7 +179,7 @@ const copyContact = async (field: ContactField, value: string) => {
   try {
     await navigator.clipboard.writeText(value)
     copiedField.value = field
-    copyStatus.value = `${field === 'email' ? '이메일' : '전화번호'}을 복사했습니다.`
+    copyStatus.value = `${field === 'email' ? '이메일을' : '전화번호를'} 복사했습니다.`
   } catch {
     copiedField.value = null
     copyStatus.value = '복사하지 못했습니다. 연락처를 직접 선택해 복사해 주세요.'
