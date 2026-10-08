@@ -44,7 +44,7 @@
         </div>
 
         <aside class="skill-panel" aria-labelledby="skill-heading">
-          <p id="skill-heading" class="eyebrow">Core skills</p>
+          <p id="skill-heading" class="eyebrow">Tech stack</p>
           <ul class="skill-groups">
             <li v-for="group in profile.skillGroups" :key="group.label">
               <strong>{{ group.label }}</strong>

@@ -8,24 +8,36 @@ export const profile = {
   githubUrl: 'https://github.com/Meggigoatee',
   skillGroups: [
     {
-      label: 'Core',
-      skills: ['TypeScript', 'Vue 3', 'Pinia']
+      label: 'Language',
+      skills: ['JavaScript', 'TypeScript', 'Java', 'Rust']
     },
     {
       label: 'Web',
-      skills: ['Nuxt 4', 'Nuxt Content', 'IndexedDB']
+      skills: ['Vue 3', 'Pinia', 'Nuxt 4', 'Nuxt Content', 'Tailwind CSS', 'IndexedDB', 'Spring Boot']
     },
     {
       label: 'Desktop',
-      skills: ['Electron', 'Tauri 2', 'Rust']
+      skills: ['Electron', 'Tauri 2']
     },
     {
-      label: 'Interactive & AI',
-      skills: ['PixiJS', 'MediaPipe', 'ONNX Runtime Web']
+      label: 'Interactive',
+      skills: ['PixiJS', 'Canvas API']
+    },
+    {
+      label: 'AI & Vision',
+      skills: ['YOLO', 'MediaPipe', 'ONNX Runtime Web']
     },
     {
       label: 'System',
-      skills: ['Node.js', 'WebSocket', 'SQLite']
+      skills: ['Node.js', 'WebSocket', 'TCP/UDP', 'SQLite', 'SQLx']
+    },
+    {
+      label: 'Infra',
+      skills: ['Cloudflare', 'Docker']
+    },
+    {
+      label: 'Test/형상관리',
+      skills: ['Git', 'Vitest', 'Playwright']
     }
   ]
 } as const
